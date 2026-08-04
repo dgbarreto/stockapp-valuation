@@ -8,6 +8,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.danilobarreto.stockapp.designsystem.theme.StockAppTheme
+import com.danilobarreto.stockapp.valuation.domain.AssetFundamentals
+import com.danilobarreto.stockapp.valuation.presentation.ValuationScreen
+import com.danilobarreto.stockapp.valuation.presentation.ValuationViewModel
 
 // Sample isolado do módulo valuation: diferente dos outros samples, este não depende de
 // stockapp-auth nem faz chamada de rede — o módulo é cálculo puro em Kotlin (ver decisão
@@ -18,7 +21,18 @@ import com.danilobarreto.stockapp.designsystem.theme.StockAppTheme
 fun SampleApp() {
     StockAppTheme {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Valuation — em construção", style = MaterialTheme.typography.titleMedium)
+            val assetFundamentals = AssetFundamentals(
+                currentPrice = 38.0,
+                eps = 2.5,
+                bookValuePerShare = 25.0,
+                dividendPerShareTtm = 2.0,
+                dividendYieldTtm = 0.0526,   // ~5,26% (2.0 / 38.0)
+                earningsCagr5y = 0.08,       // 8% ao ano, sugestão de g
+                priceToSalesRatio = 1.85
+            )
+            val viewModel = ValuationViewModel(assetFundamentals)
+
+            ValuationScreen(viewModel, ticker = "PETR4", onBack = {})
         }
     }
 }
