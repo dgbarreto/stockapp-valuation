@@ -13,6 +13,17 @@ sonar {
     properties {
         property("sonar.projectKey", "dgbarreto_stockapp-valuation")
         property("sonar.organization", "dgbarreto")
-        property("sonar.sources", "valuation/src")
+    }
+}
+
+// Demo/fixture modules, not product code — excluded from analysis.
+project(":sample") {
+    sonar {
+        skipProject = true
+    }
+}
+project(":sample-android") {
+    sonar {
+        skipProject = true
     }
 }
