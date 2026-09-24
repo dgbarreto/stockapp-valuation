@@ -1,20 +1,29 @@
 package com.danilobarreto.stockapp.valuation.presentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.danilobarreto.stockapp.designsystem.components.StockAppBadge
@@ -22,6 +31,7 @@ import com.danilobarreto.stockapp.designsystem.components.StockAppBadgeStyle
 import com.danilobarreto.stockapp.designsystem.components.StockAppCard
 import com.danilobarreto.stockapp.designsystem.components.StockAppKeyValueRow
 import com.danilobarreto.stockapp.designsystem.components.StockAppTextField
+import com.danilobarreto.stockapp.designsystem.icons.StockAppIcons
 import com.danilobarreto.stockapp.designsystem.theme.StockAppColors
 import com.danilobarreto.stockapp.designsystem.theme.StockAppTypography
 import com.danilobarreto.stockapp.designsystem.util.toDecimalString
@@ -31,26 +41,30 @@ import com.danilobarreto.stockapp.valuation.domain.ValuationResult
 fun ValuationScreen(viewModel: ValuationViewModel, ticker: String, onBack: () -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Valuation — $ticker") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Text("←", style = StockAppTypography.titleLarge, color = StockAppColors.textPrimary)
-                    }
-                },
-            )
+    Column(modifier = Modifier.fillMaxSize().background(StockAppColors.surface1)) {
+        Column(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top)).padding(horizontal = 16.dp).padding(top = 8.dp, bottom = 16.dp)) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(StockAppColors.surface2)
+                    .clickable(onClick = onBack),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(StockAppIcons.ArrowLeft, contentDescription = "Voltar", tint = StockAppColors.textPrimary, modifier = Modifier.size(20.dp))
+            }
+            Text("Valuation", style = StockAppTypography.titleLarge, color = StockAppColors.textPrimary, modifier = Modifier.padding(top = 22.dp))
+            Text(ticker, style = StockAppTypography.bodyMedium, color = StockAppColors.textMuted, modifier = Modifier.padding(top = 6.dp))
         }
-    ) { innerPadding ->
+
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
                 StockAppCard {
                     Column {
-                        StockAppKeyValueRow("Preço atual", uiState.currentPrice?.toDecimalString() ?: "—")
+                        StockAppKeyValueRow("Preço atual", uiState.currentPrice?.let { "R$ ${it.toDecimalString()}" } ?: "—")
                         StockAppKeyValueRow("DY (12m)", uiState.dividendYieldTtm?.let { "${(it * 100).toDecimalString()}%" } ?: "—")
                         StockAppKeyValueRow("P/S (PSR)", uiState.priceToSalesRatio?.toDecimalString() ?: "—")
                     }
@@ -90,16 +104,17 @@ fun ValuationScreen(viewModel: ValuationViewModel, ticker: String, onBack: () ->
         }
     }
 }
+
 @Composable
 private fun ValuationResultCard(title: String, result: ValuationResult?, currentPrice: Double?) {
     StockAppCard {
         Column {
-            Text(title, style = MaterialTheme.typography.titleMedium)
+            Text(title, style = StockAppTypography.titleMedium, color = StockAppColors.textPrimary)
             when (result) {
                 is ValuationResult.FairPrice -> {
-                    StockAppKeyValueRow("Preço-teto", result.value.toDecimalString())
+                    StockAppKeyValueRow("Preço-teto", "R$ ${result.value.toDecimalString()}")
                     if (currentPrice != null) {
-                        StockAppKeyValueRow("Preço atual", currentPrice.toDecimalString())
+                        StockAppKeyValueRow("Preço atual", "R$ ${currentPrice.toDecimalString()}")
                         val isBelowCeiling = currentPrice <= result.value
                         Spacer(modifier = Modifier.padding(top = 6.dp))
                         StockAppBadge(
@@ -108,8 +123,8 @@ private fun ValuationResultCard(title: String, result: ValuationResult?, current
                         )
                     }
                 }
-                is ValuationResult.Unavailable -> Text(result.reason, style = MaterialTheme.typography.bodySmall)
-                null -> Text("Calculando…", style = MaterialTheme.typography.bodySmall)
+                is ValuationResult.Unavailable -> Text(result.reason, style = StockAppTypography.bodySmall, color = StockAppColors.textMuted, modifier = Modifier.padding(top = 4.dp))
+                null -> Text("Calculando…", style = StockAppTypography.bodySmall, color = StockAppColors.textMuted, modifier = Modifier.padding(top = 4.dp))
             }
         }
     }
