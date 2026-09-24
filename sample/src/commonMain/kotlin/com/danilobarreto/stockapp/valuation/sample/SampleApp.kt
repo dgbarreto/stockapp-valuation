@@ -1,11 +1,17 @@
 package com.danilobarreto.stockapp.valuation.sample
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.danilobarreto.stockapp.designsystem.theme.StockAppTheme
 import com.danilobarreto.stockapp.valuation.domain.AssetFundamentals
 import com.danilobarreto.stockapp.valuation.domain.AssetValuationInput
 import com.danilobarreto.stockapp.valuation.presentation.ValuationListScreen
 import com.danilobarreto.stockapp.valuation.presentation.ValuationListViewModel
+import com.danilobarreto.stockapp.valuation.presentation.ValuationScreen
+import com.danilobarreto.stockapp.valuation.presentation.ValuationViewModel
 
 // Sample isolado do módulo valuation: sem stockapp-auth nem chamada de rede — o módulo é
 // cálculo puro em Kotlin (ver decisão em docs/decisoes.md do repo de planejamento), então os
@@ -74,11 +80,26 @@ fun SampleApp() {
 
     val viewModel = ValuationListViewModel(items)
 
+    // Só existe no sample: o app real navega pra tela de detalhe via NavHost do
+    // stockapp-app (ver AppNavHost.kt). Aqui, sem NavController, um estado local
+    // simples já é suficiente pra exercitar as duas telas do módulo.
+    var selectedTicker by remember { mutableStateOf<String?>(null) }
+
     StockAppTheme {
-        ValuationListScreen(
-            viewModel = viewModel,
-            onItemClick = { /* navegação real fica pro stockapp-app; sample só lista */ },
-            onBack = { },
-        )
+        val selected = items.find { it.ticker == selectedTicker }
+        if (selected != null) {
+            val detailViewModel = remember(selected.ticker) { ValuationViewModel(selected.fundamentals) }
+            ValuationScreen(
+                viewModel = detailViewModel,
+                ticker = selected.ticker,
+                onBack = { selectedTicker = null },
+            )
+        } else {
+            ValuationListScreen(
+                viewModel = viewModel,
+                onItemClick = { ticker -> selectedTicker = ticker },
+                onBack = { },
+            )
+        }
     }
 }

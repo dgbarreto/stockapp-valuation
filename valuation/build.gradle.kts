@@ -83,7 +83,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
 
-            implementation("com.danilobarreto.stockapp:designsystem:0.2.2")
+            implementation("com.danilobarreto.stockapp:designsystem:0.4.3")
         }
         iosMain.dependencies {
         }
